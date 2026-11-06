@@ -1,0 +1,35 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+.pytest_cache/
+
+# 环境变量（真实 Key 不要提交）
+.env
+.env.local
+
+# 运行时数据：索引、会话、工单
+data/index/
+data/index.staging/
+data/index.old/
+data/qdrant/
+data/sessions/
+data/tickets.json
+
+# 前端
+node_modules/
+frontend/dist/
+*.local
+
+# 评测明细（报告保留，便于对比）
+backend/eval/results.json
+backend/eval/multiturn_results.json
+
+# 系统
+.DS_Store
+Thumbs.db
+
+# 分批评测中间产物
+backend/eval/report_*.results.json
+backend/eval/report_*.md

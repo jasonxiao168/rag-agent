@@ -1,0 +1,70 @@
+services:
+  qdrant:
+    image: qdrant/qdrant:v1.12.5
+    container_name: rag-agent-qdrant
+    ports:
+      - "6333:6333"
+    volumes:
+      # 用命名卷而不是 bind mount：Docker Desktop(macOS) 上 bind mount 的数据库文件更慢
+      - qdrant_storage:/qdrant/storage
+    restart: unless-stopped
+
+  backend:
+    build: ./backend
+    container_name: rag-agent-backend
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      DATA_DIR: /data
+      VECTOR_BACKEND: qdrant
+      QDRANT_URL: http://qdrant:6333
+      FASTEMBED_CACHE_DIR: /data/fastembed_cache
+      # Docker Desktop 会把宿主代理注入容器。不排除内网域名，
+      # 后端访问 qdrant、前端访问 backend 都会被送进代理，表现为超时/502/EAGAIN。
+      # 同时排除模型下载域名，避免代理中断导致的 SSL EOF。
+      NO_PROXY: localhost,127.0.0.1,qdrant,backend,huggingface.co,hf-mirror.com
+      no_proxy: localhost,127.0.0.1,qdrant,backend,huggingface.co,hf-mirror.com
+    volumes:
+      - ./data:/data
+    ports:
+      - "8000:8000"
+    depends_on:
+      - qdrant
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1:8000/api/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 30s
+    restart: unless-stopped
+
+  frontend:
+    build: ./frontend
+    container_name: rag-agent-frontend
+    depends_on:
+      backend:
+        # 等后端健康检查通过再启动 nginx，避免 nginx 启动时 upstream 还不存在
+        condition: service_healthy
+    environment:
+      NO_PROXY: localhost,127.0.0.1,backend
+      no_proxy: localhost,127.0.0.1,backend
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://127.0.0.1/ >/dev/null || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 6
+      start_period: 10s
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+
+# 说明：
+# 1. 生产/容器环境使用 Qdrant server（http://qdrant:6333）；
+#    本地不设 QDRANT_URL 时，qdrant-client 自动使用嵌入式模式（data/index/qdrant）。
+# 2. 首次启动前先构建索引：
+#    docker compose run --rm backend python -m scripts.ingest
+# 3. 重置向量数据：docker compose down -v（会删除 qdrant_storage 命名卷）
+
+volumes:
+  qdrant_storage:

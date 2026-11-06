@@ -1,0 +1,6 @@
+{"id": "mt-01", "user": "carol", "turns": ["一线城市出差住宿标准是多少？", "那二线呢？"], "must_contain": ["450"], "expect_route": "kb"}
+{"id": "mt-02", "user": "carol", "turns": ["烟酰胺焕亮精华的烟酰胺浓度是多少？", "那价格呢？"], "must_contain": ["129"], "expect_route": "kb"}
+{"id": "mt-03", "user": "carol", "turns": ["订单 ORD-2026-1001 到哪了？", "它什么时候能到？"], "must_contain": ["2026-11-08"], "expect_route": "tool"}
+{"id": "mt-04", "user": "carol", "turns": ["经销商保证金是多少？", "那首批进货呢？"], "must_contain": ["50000"], "expect_route": "kb"}
+{"id": "mt-05", "user": "carol", "turns": ["售后工单多久闭环？", "那差评呢？"], "must_contain": ["24 小时"], "expect_route": "kb"}
+{"id": "mt-06", "user": "carol", "turns": ["客户投诉登记里王先生的联系电话是多少？", "那赵女士的电话呢？"], "must_contain": ["139****4321"], "expect_route": "kb"}
